@@ -10,14 +10,13 @@ export function Confirm({bookInfo: {title, author, description}, closeConfirm}) 
   
   const handleConfirmClick = async(event) => {
     setIsLoadingCheckout(true);
-    event.stopPropagation();    
 
     const { checkoutUrl } = await getCheckoutUrl(title);
     window.location.href = checkoutUrl;
   }
 
   return (
-    <div className="Confirm" onClick={closeConfirm}>
+    <div className="Confirm">
       <div className="Confirm__modal">
         {title && !isLoadingCheckout ? (
           <>
@@ -42,6 +41,7 @@ export function Confirm({bookInfo: {title, author, description}, closeConfirm}) 
           </>
         )}
       </div>
+      <div className="Confirm__overlay" onClick={closeConfirm} />
     </div>
   )
 }
