@@ -1,22 +1,27 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Confirm } from '../Confirm';
 import { getBookInfo } from "../../api/api";
+import { GenreType, BookInfoType } from '../../api/types';
 
 import './Genres.scss';
 
-export function Genres({ genres }) {
-  const [bookInfo, setBookInfo] = useState({});
+interface GenresProps {
+  genres: GenreType[];
+}
+
+export function Genres({ genres }: GenresProps) {
+  const [bookInfo, setBookInfo] = useState<BookInfoType|null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const handleGenreClick = async(genreLink) => {
+  const handleGenreClick = async(genreLink: string) => {
     setIsConfirmOpen(true);
     const bookInfo = await getBookInfo(genreLink);
     setBookInfo(bookInfo);
   }
 
-  const closeConfirm = () => {
+  const closeConfirm = (): void => {
     setIsConfirmOpen(false);
-    setBookInfo({});
+    setBookInfo(null);
   }
 
   return (

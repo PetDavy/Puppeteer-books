@@ -1,30 +1,44 @@
-import { useState } from 'react';
-
+import React, { useState } from 'react';
 import { Loader } from '../Loader';
-
 import { getCheckoutUrl } from '../../api/api';
+import { BookInfoType } from '../../api/types';
+
 import './Confirm.scss';
 
-export function Confirm({bookInfo: {title, author, description}, closeConfirm}) {
+interface ConfirmProps {
+  bookInfo: BookInfoType|null;
+  closeConfirm: () => void;
+}
+
+export function Confirm({bookInfo, closeConfirm}: ConfirmProps) {
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   
-  const handleConfirmClick = async(event) => {
+  const handleConfirmClick = async() => {
+    if (!bookInfo) {
+      return;
+    }
+
     setIsLoadingCheckout(true);
 
-    const { checkoutUrl } = await getCheckoutUrl(title);
-    window.location.href = checkoutUrl;
+    const { checkoutUrl } = await getCheckoutUrl(bookInfo.title);
+
+    if (!checkoutUrl) {
+      setIsLoadingCheckout(false);
+    } else {
+      window.location.href = checkoutUrl;
+    }
   }
 
   return (
     <div className="Confirm">
       <div className="Confirm__modal">
-        {title && !isLoadingCheckout ? (
+        {bookInfo && !isLoadingCheckout ? (
           <>
-            <h1 className="Confirm__book-title">{title}</h1>
+            <h1 className="Confirm__book-title">{bookInfo.title}</h1>
             <p className="Confirm__book-author">
-              by <i>{author}</i>
+              by <i>{bookInfo.author}</i>
             </p>
-            <small className='Confirm__book-descroption'>{description}</small>
+            <small className='Confirm__book-descroption'>{bookInfo.description}</small>
             <div className="Confirm__buttons">
               <button className="Confirm__button" onClick={handleConfirmClick}>
                 Confirm
