@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Genres } from '../Genres';
 import { Loader } from '../Loader';
 import { getGenres } from '../../api/api';
+import { GenreType } from '../../api/types';
 
 import './App.scss';
 
 export function App() {
-  const [genres, setGenres] = useState([]);
+  const [genres, setGenres] = useState<GenreType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
