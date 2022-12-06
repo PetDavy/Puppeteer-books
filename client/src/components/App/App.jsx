@@ -13,7 +13,7 @@ export function App() {
     loadGenres();
   }, []);
 
-  async function loadGenres() {
+  const loadGenres = async() => {
     const genres = await getGenres();
     setGenres(genres);
     setIsLoading(false);

@@ -1,4 +1,3 @@
-import puppeteer, { Page, Browser, ElementHandle }  from 'puppeteer';
 import { Genre, BookInfo } from './types';
 import { getPage } from './common';
 
@@ -9,6 +8,10 @@ import {
   BOOK_ID,
   BOOK_AUTHOR,
   BOOK_DESCRIPTION,
+  BOOK_POLLES,
+  LINK,
+  RESOURSE_ID,
+  BOOK_TITLE,
 } from './selectors';
 
 export async function getGenres(booksUrl: string): Promise<Genre[]> {
@@ -23,7 +26,7 @@ export async function getGenres(booksUrl: string): Promise<Genre[]> {
 
   const genresPromises = genresElements.map(async (genre) => {
     const genreName = await genre.$eval(GENRE_NAME, (el) => el.textContent);
-    const genreLink = await genre.$eval('a', (el) => el.getAttribute('href'));
+    const genreLink = await genre.$eval(LINK, (el) => el.getAttribute('href'));
 
     return {
       id: genreLink?.split('/')[2] || null,
@@ -42,15 +45,14 @@ export async function getGenres(booksUrl: string): Promise<Genre[]> {
 
 export async function getBookInfo(url: string): Promise<BookInfo> {
   const [page, browser] = await getPage(url);
-  const bookPolles = await page.$$('.pollAnswer');
+  const bookPolles = await page.$$(BOOK_POLLES);
 
   for (const bookPolle of bookPolles) {
-    await page.waitForTimeout(1000);
     await bookPolle.hover();
-    await page.waitForTimeout(1000);
+    await page.waitForSelector(BOOK_ID);
 
-    const id = await bookPolle.$eval(BOOK_ID, (el) => el.getAttribute('data-resource-id'));
-    const bookTitle = await page.evaluate(el => el.querySelector('h2 a')?.textContent, bookPolle);
+    const id = await bookPolle.$eval(BOOK_ID, (el) => el.getAttribute(RESOURSE_ID));
+    const bookTitle = await page.evaluate(el => el.querySelector(BOOK_TITLE)?.textContent, bookPolle);
   
     if (!id || !bookTitle) {
       continue;

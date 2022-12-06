@@ -8,13 +8,13 @@ export function Genres({ genres }) {
   const [bookInfo, setBookInfo] = useState({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  async function handleGenreClick(genreLink) {
+  const handleGenreClick = async(genreLink) => {
     setIsConfirmOpen(true);
     const bookInfo = await getBookInfo(genreLink);
     setBookInfo(bookInfo);
   }
 
-  function closeConfirm() {
+  const closeConfirm = () => {
     setIsConfirmOpen(false);
     setBookInfo({});
   }

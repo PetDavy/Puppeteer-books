@@ -8,7 +8,7 @@ import './Confirm.scss';
 export function Confirm({bookInfo: {title, author, description}, closeConfirm}) {
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   
-  async function handleConfirmClick(event) {
+  const handleConfirmClick = async(event) => {
     setIsLoadingCheckout(true);
     event.stopPropagation();    
 

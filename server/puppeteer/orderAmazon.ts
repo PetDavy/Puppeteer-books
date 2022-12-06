@@ -1,4 +1,4 @@
-import { ElementHandle, Page, Browser } from "puppeteer";
+import { ElementHandle, Page } from "puppeteer";
 import { getPage } from "./common";
 import {
   CATEGORY_SELECT,
@@ -11,6 +11,12 @@ import {
   DONE_BUTTON,
   FORMATS,
   BUY_NOW_BUTTON,
+  COUNTRY_CANADA,
+  FORMAT_TITLE,
+  FORMAT_TYPE_PAPERBACK,
+  FORMAT_TYPE_HARD_COVER,
+  SELECTED,
+  LINK,
 } from "./selectors";
 
 export async function prepareOrder(url: string, title: string): Promise<string | void> {
@@ -52,16 +58,16 @@ async function setLocation(page: Page): Promise<void>  {
   }
 
   await locationSelect.click();
-  await page.waitForTimeout(1000);
+  await page.waitForSelector(COUNTRY_SELECT);
 
   const countrySelect = await page.$(COUNTRY_SELECT);
 
   await countrySelect?.click();
-  await page.waitForTimeout(1000); // ugly
+  await page.waitForXPath(COUNTRY_CANADA);
 
-  const [country] = await page.$x(`//a[contains(., 'Canada')]`); // todo: make it dynamic
+  const [country] = await page.$x(COUNTRY_CANADA);
   await (country as ElementHandle)?.click();
-  await page.waitForTimeout(1000); // ugly
+  await page.waitForSelector(DONE_BUTTON);
 
   const doneButton = await page.$(DONE_BUTTON);
   await doneButton?.click();
@@ -72,13 +78,13 @@ async function chooseFormat(page: Page): Promise<void> {
   const formats = await page.$$(FORMATS);
 
   for (const format of formats) {
-    const formatTitle = await format.evaluate(el => el.querySelector('a span')?.textContent);
+    const formatTitle = await format.evaluate(el => el.querySelector(FORMAT_TITLE)?.textContent);
 
-    if (formatTitle?.includes('Paperback') || formatTitle?.includes('Hardcover')) {
-      const isSelectedFormat = await format.evaluate(el => el.classList.contains('selected'));
+    if (formatTitle?.includes(FORMAT_TYPE_PAPERBACK) || formatTitle?.includes(FORMAT_TYPE_HARD_COVER)) {
+      const isSelectedFormat = await format.evaluate(el => el.classList.contains(SELECTED));
 
       if (!isSelectedFormat) {
-        const formatLink = await format.$('a');
+        const formatLink = await format.$(LINK);
 
         await formatLink?.click();
         await page.waitForNavigation();
