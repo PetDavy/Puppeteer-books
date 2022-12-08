@@ -8,14 +8,11 @@ import {
   BOOK_IMAGE,
   LOCATION_SELECT,
   COUNTRY_SELECT,
+  COUNTRY_DROPDOWN,
   DONE_BUTTON,
   FORMATS,
   BUY_NOW_BUTTON,
   COUNTRY_CANADA,
-  FORMAT_TITLE,
-  FORMAT_TYPE_PAPERBACK,
-  FORMAT_TYPE_HARD_COVER,
-  SELECTED,
   LINK,
 } from "./selectors";
 
@@ -51,19 +48,23 @@ async function findBook(page: Page, title: string): Promise<void> {
 }
 
 async function setLocation(page: Page): Promise<void>  {
-    const locationSelect = await page.$(LOCATION_SELECT);
+  const locationSelect = await page.$(LOCATION_SELECT);
   
   if (!locationSelect) {
     return;
   }
 
-  await locationSelect.click();
-  await page.waitForSelector(COUNTRY_SELECT);
+  await Promise.all([
+    page.waitForSelector(COUNTRY_SELECT),
+    locationSelect.click(),
+  ])
 
   const countrySelect = await page.$(COUNTRY_SELECT);
 
-  await countrySelect?.click();
-  await page.waitForXPath(COUNTRY_CANADA);
+  await Promise.all([
+    page.waitForSelector(COUNTRY_DROPDOWN),
+    countrySelect?.click({delay: 1000}),
+  ])
 
   const [country] = await page.$x(COUNTRY_CANADA);
   await (country as ElementHandle)?.click();
@@ -78,10 +79,10 @@ async function chooseFormat(page: Page): Promise<void> {
   const formats = await page.$$(FORMATS);
 
   for (const format of formats) {
-    const formatTitle = await format.evaluate(el => el.querySelector(FORMAT_TITLE)?.textContent);
+    const formatTitle = await format.evaluate(el => el.querySelector('a span')?.textContent, );
 
-    if (formatTitle?.includes(FORMAT_TYPE_PAPERBACK) || formatTitle?.includes(FORMAT_TYPE_HARD_COVER)) {
-      const isSelectedFormat = await format.evaluate(el => el.classList.contains(SELECTED));
+    if (formatTitle?.includes('Paperback') || formatTitle?.includes('Hardcover')) {
+      const isSelectedFormat = await format.evaluate(el => el.classList.contains('selected'));
 
       if (!isSelectedFormat) {
         const formatLink = await format.$(LINK);

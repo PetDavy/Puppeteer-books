@@ -9,9 +9,12 @@ import {
   BOOK_AUTHOR,
   BOOK_DESCRIPTION,
   BOOK_POLLES,
-  LINK,
-  RESOURSE_ID,
   BOOK_TITLE,
+  LINK,
+  CTA_BANNER,
+  BOOK_TITLE_B,
+  BOOK_AUTHOR_B,
+  BOOK_DESCRIPTION_B,
 } from './selectors';
 
 export async function getGenres(booksUrl: string): Promise<Genre[]> {
@@ -45,21 +48,43 @@ export async function getGenres(booksUrl: string): Promise<Genre[]> {
 
 export async function getBookInfo(url: string): Promise<BookInfo> {
   const [page, browser] = await getPage(url);
+
+  await page.waitForSelector(BOOK_POLLES);
   const bookPolles = await page.$$(BOOK_POLLES);
 
   for (const bookPolle of bookPolles) {
-    await bookPolle.hover();
-    await page.waitForSelector(BOOK_ID);
+    const id = await bookPolle.$eval(BOOK_ID, (el) => el.getAttribute('data-resource-id'));
+    let titleSelector = BOOK_TITLE;
+    let authorSelector = BOOK_AUTHOR;
+    let descriptionSelector = BOOK_DESCRIPTION;
 
-    const id = await bookPolle.$eval(BOOK_ID, (el) => el.getAttribute(RESOURSE_ID));
-    const bookTitle = await page.evaluate(el => el.querySelector(BOOK_TITLE)?.textContent, bookPolle);
+    await Promise.all([
+      page.waitForNavigation(),
+      bookPolle.click(),
+    ])
+    
+    const isAlternativePage = await page.$(CTA_BANNER);
+    
+    if (isAlternativePage) {
+      titleSelector = BOOK_TITLE_B;
+      authorSelector = BOOK_AUTHOR_B;
+      descriptionSelector = BOOK_DESCRIPTION_B;
+    }
+    
+    await Promise.all([
+      page.waitForSelector(titleSelector),
+      page.waitForSelector(authorSelector),
+      page.waitForSelector(descriptionSelector),
+    ])
+
+    const bookTitle = await page.$eval(titleSelector, (el) => el.textContent);
   
     if (!id || !bookTitle) {
       continue;
     }
   
-    const bookAuthor = await bookPolle.$eval(BOOK_AUTHOR, (el) => el.textContent);
-    const bookDescription = await bookPolle.$eval(BOOK_DESCRIPTION, (el) => el.textContent);
+    const bookAuthor = await page.$eval(authorSelector, (el) => el.textContent);
+    const bookDescription = await page.$eval(descriptionSelector, (el) => el.textContent);
   
     await browser.close();
   
@@ -71,5 +96,6 @@ export async function getBookInfo(url: string): Promise<BookInfo> {
     } as BookInfo;
   }
 
+  await browser.close();
   return {} as BookInfo;
 }
